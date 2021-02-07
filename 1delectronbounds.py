@@ -55,8 +55,7 @@ while(len(initpos)<num_e):
               r=uniform(-10,10)
               if r not in initpos: 
                   initpos.append(r)
-                  e=ec.electron(r,0,0,n)
-                  electrons.append(e) #adds new instance of electron to an array
+                  electrons.append(ec.electron(r,0,0,n)) #adds new instance of electron to an array
 
 
 staticelectrons.append(ec.electron(20,0,0,n))
