@@ -84,7 +84,6 @@ for x in range (0,n):
         ke_now +=af.Kinetic(electron.getVel())  
     
     for electron in electrons:
-        fnet = 0
         for i in range (counter+1,num_e):
             pedist = af.getDistance(electron.getPos(), pos_now[i])
             pe_now +=af.PotE(abs(pedist))
