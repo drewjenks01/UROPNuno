@@ -4,6 +4,7 @@ Created on Fri Feb  5 16:32:28 2021
 
 @author: drewj
 """
+
 import electronclass as ec
 import allfunctions as af
 import math
@@ -37,11 +38,11 @@ def model1(z,t):
 ########################################
 
 #sets the timepoints
-n=40000
-t=np.linspace(0,4,n)
+n=30000
+t=np.linspace(0,5,n)
 
 #number of electrons in system
-num_e = 3
+num_e = 2
 
 #list for initial positions
 initpos=[]  
@@ -49,17 +50,20 @@ initpos=[]
 #lists of electrons
 electrons,staticelectrons = [],[]
 
-#creats random starting positions for each electrons b/w a certain range
-while(len(initpos)<num_e):
-    for i in range(num_e):
-              r=uniform(-10,10)
-              if r not in initpos: 
-                  initpos.append(r)
-                  electrons.append(ec.electron(r,0,0,n)) #adds new instance of electron to an array
+#creates random starting positions for each electrons b/w a certain range
+# while(len(initpos)<num_e):
+#     for i in range(num_e):
+#               r=uniform(-5,5)
+#               if r not in initpos: 
+#                   initpos.append(r)
+#                   electrons.append(ec.electron(r,0,0,n)) #adds new instance of electron to an array
 
 
-staticelectrons.append(ec.electron(20,0,0,n))
-staticelectrons.append(ec.electron(-20,0,0,n))
+electrons.append(ec.electron(-1.446,0,0,n))
+electrons.append(ec.electron(1.446,0,0,n))
+
+staticelectrons.append(ec.electron(4,0,0,n))   #right barrier
+staticelectrons.append(ec.electron(-4,0,0,n))  #left barrier
     
     
 #creates arrays for energy values
@@ -78,7 +82,7 @@ for x in range (0,n):
     ke_now,pe_now,counter = 0,0,0
     pos_now = []
     
-    for electron in electrons:      #makes an array of current electron positions and calculates KE
+    for electron in electrons:                   #makes an array of current electron positions and calculates KE
         pos_now.append(electron.getPos())
         ke_now +=af.Kinetic(electron.getVel())  
     
@@ -87,7 +91,8 @@ for x in range (0,n):
             pedist = af.getDistance(electron.getPos(), pos_now[i])
             pe_now +=af.PotE(abs(pedist))
         counter +=1  
-        pe_now+=af.PotE(abs(af.getDistance(electron.getPos(),staticelectrons[0].getPos())))+af.PotE(abs(af.getDistance(electron.getPos(),staticelectrons[1].getPos())))
+        pe_now+=(af.PotE(abs(af.getDistance(electron.getPos(),staticelectrons[0].getPos())))
+                  +af.PotE(abs(af.getDistance(electron.getPos(),staticelectrons[1].getPos()))))
 
         fnet = 0
         for i in range (num_e):     #solves for total force on each electron
@@ -99,12 +104,21 @@ for x in range (0,n):
             else:
                 fnet -= k*(elecCharge**2)/(distance**2) #force will push electron left
                 
-        fnet+= -k*(elecCharge**2)/(af.getDistance(electron.getPos(),staticelectrons[0].getPos())**2)+k*(elecCharge**2)/(af.getDistance(electron.getPos(),staticelectrons[1].getPos())**2)
+                
+        #force from the 2 boundary electrons
+        fnet+= (-k*(elecCharge**2)/(af.getDistance(electron.getPos(),staticelectrons[0].getPos())**2)
+                +k*(elecCharge**2)/(af.getDistance(electron.getPos(),staticelectrons[1].getPos())**2))
+      
+        print(electron.getVel())
         electron.ChangeFor(fnet)
         z = odeint(model1,electron.getPosVel(),t)   #gets the new pos and vel
-        electron.ChangePos(z[1][0],x)       #updates pos
-        electron.ChangeVel(z[1][1],x)       #updates vel
-        
+        electron.ChangePos(z[1][0],x)                #updates pos
+        electron.ChangeVel(z[1][1],x)                 #updates vel
+    
+    for electron in staticelectrons:
+        electron.ChangePos(electron.getPos(),x)
+
+    
     ke[x],pe[x] = ke_now,pe_now         #adds the new KE and PE to arrays
     totale[x]=pe[x] + ke[x]             #addds total energy to array
     
@@ -123,8 +137,18 @@ for electron in electrons:
     plt.plot(t,electron.getPosList())
     plt.xlabel('time')
     plt.ylabel('position')
+# for electron in staticelectrons:
+#     plt.plot(t,electron.getPosList(),'--')
+#     plt.xlabel('time')
+#     plt.ylabel('position')
 # plt.axis([14,25,-55,55])
 plt.show()
+
+plt.plot(t,electrons[0].getPosList())
+plt.xlabel('time')
+plt.ylabel('position')
+plt.show()
+
     
 # #velocity vs time
 for electron in electrons:
@@ -143,3 +167,4 @@ plt.ylabel('energy')
 plt.legend(['total','PE','KE'])
 # #plt.axis([-0.5,60,0,(1.5)*(10**-28)])
 plt.show()
+
